@@ -6,6 +6,8 @@ rust-version = "1.85"
 license     = "Apache-2.0"
 description = "Zero-dependency Black-Scholes options pricing engine. Pure Rust."
 repository  = "https://github.com/org-regit-io/regit-blackscholes"
+homepage    = "https://www.regit.io"
+authors     = ["Nicolas Koenig <nicolas.koenig@regit.io>"]
 keywords    = ["black-scholes", "blackscholes", "options", "finance", "derivatives"]
 categories  = ["finance", "mathematics", "science"]
 
