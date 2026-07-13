@@ -14,9 +14,12 @@ pedantic = { level = "warn", priority = -1 }
 
 [features]
 default = []
+# Reserved for a future SIMD batch-pricing PR. Currently pulls in `wide`
+# but is otherwise unused; there are no functional changes when enabled.
 simd    = ["dep:wide"]
 
 [dependencies]
+# Optional, gated behind the reserved `simd` feature (see [features] above).
 wide = { version = "1.5", optional = true }
 
 [dev-dependencies]
