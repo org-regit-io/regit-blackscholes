@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-07-13
+
+### Changed
+- Migrated to Rust edition 2024 and raised the MSRV to 1.85.
+- Pinned the toolchain to 1.95.0 (rustfmt, clippy, wasm32-unknown-unknown),
+  matching the rest of the Regit OS crate fleet.
+- Updated the `wide` optional dependency (the `simd` feature) from 0.7 to 1.x.
+- Updated dev and bench dependencies: `criterion` 0.5 -> 0.8, `proptest` 1.4 -> 1.11.
+  `approx` stays on 0.5.
+
+### Added
+- GitHub Actions CI workflow (format, clippy, tests, docs, cargo-deny, wasm build).
+- GitHub Actions release workflow (verify, publish to crates.io, GitHub release).
+- NOTICE file.
+
+There are no functional or numerical changes to the pricing engine in this
+release. All models, Greeks, and the implied volatility solver behave
+identically to 1.0.3.
+
 ## [1.0.0] - Unreleased
 
 ### Added

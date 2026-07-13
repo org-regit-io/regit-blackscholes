@@ -36,7 +36,7 @@ use crate::types::OptionType;
 /// | `forward` | F | Forward price |
 /// | `strike` | K | Strike price |
 /// | `rate` | r | Risk-free rate (continuous, annualised) |
-/// | `normal_vol` | sigma_N | Normal volatility in price units (NOT percentage) |
+/// | `normal_vol` | `sigma_N` | Normal volatility in price units (NOT percentage) |
 /// | `time` | T | Time to expiry in years |
 /// | `option_type` | -- | Call or Put |
 ///
@@ -65,7 +65,7 @@ pub struct BachelierParams {
     pub strike: f64,
     /// r -- risk-free rate (continuous, annualised).
     pub rate: f64,
-    /// sigma_N -- normal volatility in price units (NOT percentage).
+    /// `sigma_N` -- normal volatility in price units (NOT percentage).
     pub normal_vol: f64,
     /// T -- time to expiry in years.
     pub time: f64,
@@ -78,7 +78,7 @@ pub struct BachelierParams {
 ///
 /// # Arguments
 ///
-/// * `params` -- Option parameters (forward, strike, rate, normal_vol, time, type).
+/// * `params` -- Option parameters (forward, strike, rate, `normal_vol`, time, type).
 ///
 /// # Returns
 ///
@@ -112,7 +112,10 @@ pub struct BachelierParams {
 /// let p = price(&params).unwrap();
 /// assert!(p > 0.0_f64);
 /// ```
-#[inline(always)]
+#[inline]
+// f, k, r, t, d — standard Bachelier normal-model notation, matching
+// MATH.md.
+#[allow(clippy::many_single_char_names)]
 pub fn price(params: &BachelierParams) -> Result<f64, PricingError> {
     // ── Input validation ─────────────────────────────────────────────
     // Note: Bachelier model is designed for rates near/below zero.
@@ -134,10 +137,18 @@ pub fn price(params: &BachelierParams) -> Result<f64, PricingError> {
     if t == 0.0_f64 {
         let intrinsic = match params.option_type {
             OptionType::Call => {
-                if f > k { f - k } else { 0.0_f64 }
+                if f > k {
+                    f - k
+                } else {
+                    0.0_f64
+                }
             }
             OptionType::Put => {
-                if k > f { k - f } else { 0.0_f64 }
+                if k > f {
+                    k - f
+                } else {
+                    0.0_f64
+                }
             }
         };
         return Err(PricingError::IntrinsicOnly { intrinsic });
@@ -152,10 +163,18 @@ pub fn price(params: &BachelierParams) -> Result<f64, PricingError> {
     if sigma_sqrt_t == 0.0_f64 {
         let intrinsic = match params.option_type {
             OptionType::Call => {
-                if f > k { f - k } else { 0.0_f64 }
+                if f > k {
+                    f - k
+                } else {
+                    0.0_f64
+                }
             }
             OptionType::Put => {
-                if k > f { k - f } else { 0.0_f64 }
+                if k > f {
+                    k - f
+                } else {
+                    0.0_f64
+                }
             }
         };
         return Ok(discount * intrinsic);
@@ -165,12 +184,8 @@ pub fn price(params: &BachelierParams) -> Result<f64, PricingError> {
     let phi_d = npdf(d);
 
     let price_val = match params.option_type {
-        OptionType::Call => {
-            discount * (f - k).mul_add(ncdf(d), sigma_sqrt_t * phi_d)
-        }
-        OptionType::Put => {
-            discount * (k - f).mul_add(ncdf(-d), sigma_sqrt_t * phi_d)
-        }
+        OptionType::Call => discount * (f - k).mul_add(ncdf(d), sigma_sqrt_t * phi_d),
+        OptionType::Put => discount * (k - f).mul_add(ncdf(-d), sigma_sqrt_t * phi_d),
     };
 
     Ok(price_val)
@@ -315,7 +330,11 @@ mod tests {
         let c = price(&call_params).unwrap();
         let p = price(&put_params).unwrap();
         let parity = (-0.05_f64 * 1.0_f64).exp() * (100.0_f64 - 105.0_f64);
-        assert!((c - p - parity).abs() < 1e-10_f64, "parity: C-P={}, expected={parity}", c - p);
+        assert!(
+            (c - p - parity).abs() < 1e-10_f64,
+            "parity: C-P={}, expected={parity}",
+            c - p
+        );
     }
 
     // ── Input validation ─────────────────────────────────────────────
@@ -424,7 +443,10 @@ mod tests {
         };
         let p = price(&params).unwrap();
         let expected = (-0.05_f64).exp() * 10.0_f64;
-        assert!((p - expected).abs() < 1e-10_f64, "zero vol: got {p}, expected {expected}");
+        assert!(
+            (p - expected).abs() < 1e-10_f64,
+            "zero vol: got {p}, expected {expected}"
+        );
     }
 
     #[test]
@@ -471,7 +493,8 @@ mod tests {
             rate: 0.05_f64,
             normal_vol: 5.0_f64,
             time: 1.0_f64,
-        }).unwrap();
+        })
+        .unwrap();
         let p2 = price(&BachelierParams {
             option_type: OptionType::Call,
             forward: 100.0_f64,
@@ -479,7 +502,8 @@ mod tests {
             rate: 0.05_f64,
             normal_vol: 10.0_f64,
             time: 1.0_f64,
-        }).unwrap();
+        })
+        .unwrap();
         assert!((p2 / p1 - 2.0_f64).abs() < 1e-10_f64, "ratio: {}", p2 / p1);
     }
 }

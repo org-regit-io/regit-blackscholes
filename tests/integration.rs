@@ -3,16 +3,21 @@
 //! Structure:
 //!   - mod golden        -- regression anchors against computed reference values
 //!   - mod parity        -- put-call parity and model-specific identities
-//!   - mod greeks_tests  -- cross-Greek relationships and finite-diff verification
+//!   - mod `greeks_tests` -- cross-Greek relationships and finite-diff verification
 //!   - mod boundaries    -- behavior at domain edges (T->0, sigma->0, deep OTM/ITM)
 //!   - mod properties    -- proptest-based invariant checks
+
+// s, k, r, q, t are standard Black-Scholes notation used throughout the
+// test helpers; params_fwd/params_bwd and d_fwd/d_bwd are intentional
+// forward/backward finite-difference pairs (see `greeks_tests`).
+#![allow(clippy::many_single_char_names, clippy::similar_names)]
 
 use approx::assert_abs_diff_eq;
 use regit_blackscholes::errors::PricingError;
 use regit_blackscholes::greeks;
 use regit_blackscholes::models::bachelier::{self, BachelierParams};
-use regit_blackscholes::models::black76::{self, Black76Params};
 use regit_blackscholes::models::black_scholes;
+use regit_blackscholes::models::black76::{self, Black76Params};
 use regit_blackscholes::models::displaced::{self, DisplacedParams};
 use regit_blackscholes::types::{OptionParams, OptionType};
 
@@ -219,8 +224,7 @@ mod golden {
         let g = greeks::compute_greeks(&atm_call()).unwrap();
         // Vanna from the engine
         assert!(
-            (g.vanna - (-0.1314_f64 * 100.0_f64)).abs() < 2.0_f64
-                || (g.vanna).abs() < 20.0_f64,
+            (g.vanna - (-0.1314_f64 * 100.0_f64)).abs() < 2.0_f64 || (g.vanna).abs() < 20.0_f64,
             "vanna should be in reasonable range: got {}",
             g.vanna
         );
@@ -230,7 +234,11 @@ mod golden {
     fn test_bs_vomma_atm_matches_golden_value() {
         let g = greeks::compute_greeks(&atm_call()).unwrap();
         // Vomma should be positive for ATM options
-        assert!(g.vomma > 0.0_f64, "vomma should be positive: got {}", g.vomma);
+        assert!(
+            g.vomma > 0.0_f64,
+            "vomma should be positive: got {}",
+            g.vomma
+        );
     }
 
     // ── Black-76 golden values ────────────────────────────────────────
@@ -581,16 +589,12 @@ mod parity {
 
     #[test]
     fn test_displaced_pcp_atm() {
-        check_displaced_parity(
-            100.0_f64, 100.0_f64, 0.05_f64, 0.25_f64, 1.0_f64, 30.0_f64,
-        );
+        check_displaced_parity(100.0_f64, 100.0_f64, 0.05_f64, 0.25_f64, 1.0_f64, 30.0_f64);
     }
 
     #[test]
     fn test_displaced_pcp_otm() {
-        check_displaced_parity(
-            100.0_f64, 110.0_f64, 0.05_f64, 0.25_f64, 1.0_f64, 50.0_f64,
-        );
+        check_displaced_parity(100.0_f64, 110.0_f64, 0.05_f64, 0.25_f64, 1.0_f64, 50.0_f64);
     }
 
     // ── Delta put-call parity: delta_call - delta_put = exp(-qT) ──────
@@ -843,7 +847,11 @@ mod greeks_tests {
     #[test]
     fn test_theta_call_negative() {
         let g = greeks::compute_greeks(&atm_call()).unwrap();
-        assert!(g.theta < 0.0_f64, "theta call must be negative: got {}", g.theta);
+        assert!(
+            g.theta < 0.0_f64,
+            "theta call must be negative: got {}",
+            g.theta
+        );
     }
 
     #[test]
@@ -1212,7 +1220,10 @@ mod boundaries {
             displacement: 1000.0_f64,
         })
         .unwrap();
-        assert!(p.is_finite(), "price must be finite with large beta: got {p}");
+        assert!(
+            p.is_finite(),
+            "price must be finite with large beta: got {p}"
+        );
         assert!(p > 0.0_f64, "ATM call should be positive: got {p}");
     }
 }
@@ -1227,12 +1238,12 @@ mod properties {
     fn valid_bs_params() -> impl Strategy<Value = OptionParams<f64>> {
         (
             prop::sample::select(vec![OptionType::Call, OptionType::Put]),
-            50.0_f64..200.0_f64,  // spot
-            50.0_f64..200.0_f64,  // strike
-            -0.02_f64..0.10_f64,  // rate
-            0.00_f64..0.05_f64,   // div yield
-            0.01_f64..2.00_f64,   // vol
-            0.02_f64..5.00_f64,   // time
+            50.0_f64..200.0_f64, // spot
+            50.0_f64..200.0_f64, // strike
+            -0.02_f64..0.10_f64, // rate
+            0.00_f64..0.05_f64,  // div yield
+            0.01_f64..2.00_f64,  // vol
+            0.02_f64..5.00_f64,  // time
         )
             .prop_map(|(option_type, spot, strike, rate, div_yield, vol, time)| {
                 OptionParams {

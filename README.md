@@ -179,7 +179,7 @@ cargo bench                       # Criterion benchmarks
 
 | Crate | Purpose | Scope | License |
 |-------|---------|-------|---------|
-| `wide` | SIMD batch pricing | Optional (`simd` feature) | Zlib |
+| `wide` | Reserved for future SIMD batch pricing | Optional (`simd` feature) | Zlib |
 | `criterion` | Benchmarks | Dev only | Apache-2.0/MIT |
 | `proptest` | Property testing | Dev only | Apache-2.0/MIT |
 | `approx` | Float comparison | Dev only | Apache-2.0 |

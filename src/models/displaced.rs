@@ -103,7 +103,7 @@ pub struct DisplacedParams {
 /// let p = price(&params).unwrap();
 /// assert!(p > 0.0_f64);
 /// ```
-#[inline(always)]
+#[inline]
 pub fn price(params: &DisplacedParams) -> Result<f64, PricingError> {
     // ── Input validation ────────────────────────────────────────────────
     if params.vol < 0.0_f64 {
@@ -191,7 +191,7 @@ pub fn price(params: &DisplacedParams) -> Result<f64, PricingError> {
 ///
 /// Re-exported from [`crate::math::npdf`].
 #[allow(dead_code)]
-#[inline(always)]
+#[inline]
 fn shifted_npdf(d: f64) -> f64 {
     npdf(d)
 }
@@ -221,12 +221,8 @@ mod tests {
         let d1 = ((forward / strike).ln() + 0.5_f64 * vol * vol * time) / vol_sqrt_t;
         let d2 = d1 - vol_sqrt_t;
         match option_type {
-            OptionType::Call => {
-                discount * forward.mul_add(ncdf(d1), -strike * ncdf(d2))
-            }
-            OptionType::Put => {
-                discount * strike.mul_add(ncdf(-d2), -forward * ncdf(-d1))
-            }
+            OptionType::Call => discount * forward.mul_add(ncdf(d1), -strike * ncdf(d2)),
+            OptionType::Put => discount * strike.mul_add(ncdf(-d2), -forward * ncdf(-d1)),
         }
     }
 

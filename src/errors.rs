@@ -107,10 +107,7 @@ impl fmt::Display for IvError {
         match self {
             Self::NoSolution => write!(f, "no implied volatility solution exists"),
             Self::BelowIntrinsic { intrinsic } => {
-                write!(
-                    f,
-                    "market price is below intrinsic value ({intrinsic})"
-                )
+                write!(f, "market price is below intrinsic value ({intrinsic})")
             }
             Self::MaxIterationsReached { last_vol, residual } => {
                 write!(
@@ -161,10 +158,7 @@ mod tests {
         let err = PricingError::IntrinsicOnly {
             intrinsic: 5.25_f64,
         };
-        assert_eq!(
-            format!("{err}"),
-            "option at expiry: intrinsic value = 5.25"
-        );
+        assert_eq!(format!("{err}"), "option at expiry: intrinsic value = 5.25");
     }
 
     #[test]
@@ -190,10 +184,7 @@ mod tests {
     #[test]
     fn test_iv_error_display_no_solution() {
         let err = IvError::NoSolution;
-        assert_eq!(
-            format!("{err}"),
-            "no implied volatility solution exists"
-        );
+        assert_eq!(format!("{err}"), "no implied volatility solution exists");
     }
 
     #[test]
@@ -267,9 +258,7 @@ mod tests {
 
     #[test]
     fn test_pricing_error_intrinsic_only_zero() {
-        let err = PricingError::IntrinsicOnly {
-            intrinsic: 0.0_f64,
-        };
+        let err = PricingError::IntrinsicOnly { intrinsic: 0.0_f64 };
         if let PricingError::IntrinsicOnly { intrinsic } = err {
             assert!((intrinsic - 0.0_f64).abs() < 1e-15_f64);
         }
