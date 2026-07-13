@@ -164,6 +164,20 @@ cargo bench                       # Criterion benchmarks
 
 **24 doc tests** — every public function's example compiles and runs.
 
+## Performance
+
+Measured with Criterion on Apple Silicon (`aarch64-apple-darwin`). Absolute
+timings are hardware dependent and will differ on other machines; treat these
+as indicative, not guarantees.
+
+| Benchmark | Median |
+|-----------|--------|
+| Normal CDF (`ncdf`) | 2.38 ns |
+| Normal PDF (`npdf`) | 1.72 ns |
+
+The normal CDF stays comfortably under the sub-5ns target. Reproduce with
+`cargo bench`.
+
 ## Code quality
 
 - `#![forbid(unsafe_code)]` crate-wide
@@ -179,7 +193,7 @@ cargo bench                       # Criterion benchmarks
 
 | Crate | Purpose | Scope | License |
 |-------|---------|-------|---------|
-| `wide` | SIMD batch pricing | Optional (`simd` feature) | Zlib |
+| `wide` | Reserved for future SIMD batch pricing | Optional (`simd` feature) | Zlib |
 | `criterion` | Benchmarks | Dev only | Apache-2.0/MIT |
 | `proptest` | Property testing | Dev only | Apache-2.0/MIT |
 | `approx` | Float comparison | Dev only | Apache-2.0 |

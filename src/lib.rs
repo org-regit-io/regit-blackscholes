@@ -24,7 +24,6 @@
 //! types/errors → math primitives (ncdf, npdf) → pricing models
 //!                                              → greeks (analytic, 17 total)
 //!                                              → implied volatility (solver chain)
-//!                                              → batch SIMD (feature-gated)
 //! ```
 //!
 //! Part of [Regit OS](https://www.regit.io) — the operating system for
@@ -37,9 +36,6 @@ pub mod math;
 pub mod models;
 pub mod types;
 
-#[cfg(feature = "simd")]
-pub mod batch;
-
 // ─── Re-exports for ergonomic top-level access ─────────────────────────────
 
 pub use errors::{IvError, PricingError};
@@ -47,6 +43,4 @@ pub use iv::IvSolver;
 pub use models::bachelier::BachelierParams;
 pub use models::black76::Black76Params;
 pub use models::displaced::DisplacedParams;
-pub use types::{
-    Float, Greeks, GreeksCalc, ImpliedVol, Model, OptionParams, OptionType, Pricing,
-};
+pub use types::{Float, Greeks, GreeksCalc, ImpliedVol, Model, OptionParams, OptionType, Pricing};

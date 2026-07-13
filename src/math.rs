@@ -62,7 +62,7 @@ const ERF_TINY: f64 = 1.387_778_780_781_445_7_e-17_f64;
 // Source: fdlibm s_erf.c, Cody (1969) Table II.
 
 /// erf numerator coefficient p₀. Source: fdlibm `s_erf.c`.
-const ERF_PP0: f64 =  1.283_791_670_955_125_6_e-1_f64;
+const ERF_PP0: f64 = 1.283_791_670_955_125_6_e-1_f64;
 /// erf numerator coefficient p₁. Source: fdlibm `s_erf.c`.
 const ERF_PP1: f64 = -3.250_421_072_470_015_e-1_f64;
 /// erf numerator coefficient p₂. Source: fdlibm `s_erf.c`.
@@ -72,13 +72,13 @@ const ERF_PP3: f64 = -5.770_270_296_489_442_e-3_f64;
 /// erf numerator coefficient p₄. Source: fdlibm `s_erf.c`.
 const ERF_PP4: f64 = -2.376_301_665_665_016_3_e-5_f64;
 /// erf denominator coefficient q₁. Source: fdlibm `s_erf.c`.
-const ERF_QQ1: f64 =  3.979_172_239_591_553_5_e-1_f64;
+const ERF_QQ1: f64 = 3.979_172_239_591_553_5_e-1_f64;
 /// erf denominator coefficient q₂. Source: fdlibm `s_erf.c`.
-const ERF_QQ2: f64 =  6.502_224_998_876_73e-2_f64;
+const ERF_QQ2: f64 = 6.502_224_998_876_73e-2_f64;
 /// erf denominator coefficient q₃. Source: fdlibm `s_erf.c`.
-const ERF_QQ3: f64 =  5.081_306_281_875_766_e-3_f64;
+const ERF_QQ3: f64 = 5.081_306_281_875_766_e-3_f64;
 /// erf denominator coefficient q₄. Source: fdlibm `s_erf.c`.
-const ERF_QQ4: f64 =  1.324_947_380_043_216_4_e-4_f64;
+const ERF_QQ4: f64 = 1.324_947_380_043_216_4_e-4_f64;
 /// erf denominator coefficient q₅. Source: fdlibm `s_erf.c`.
 const ERF_QQ5: f64 = -3.960_228_278_775_368_e-6_f64;
 
@@ -92,29 +92,29 @@ const ERFC_ONE: f64 = 1.572_992_070_502_851_3_e-1_f64;
 /// erfc-near-1 numerator coefficient pa₀. Source: fdlibm `s_erf.c`.
 const ERFC_PA0: f64 = -2.362_118_560_752_659_4_e-3_f64;
 /// erfc-near-1 numerator coefficient pa₁. Source: fdlibm `s_erf.c`.
-const ERFC_PA1: f64 =  4.148_561_186_837_483_3_e-1_f64;
+const ERFC_PA1: f64 = 4.148_561_186_837_483_3_e-1_f64;
 /// erfc-near-1 numerator coefficient pa₂. Source: fdlibm `s_erf.c`.
 const ERFC_PA2: f64 = -3.722_078_760_357_013e-1_f64;
 /// erfc-near-1 numerator coefficient pa₃. Source: fdlibm `s_erf.c`.
-const ERFC_PA3: f64 =  3.183_466_199_011_617_5_e-1_f64;
+const ERFC_PA3: f64 = 3.183_466_199_011_617_5_e-1_f64;
 /// erfc-near-1 numerator coefficient pa₄. Source: fdlibm `s_erf.c`.
 const ERFC_PA4: f64 = -1.108_946_942_823_966_8_e-1_f64;
 /// erfc-near-1 numerator coefficient pa₅. Source: fdlibm `s_erf.c`.
-const ERFC_PA5: f64 =  3.547_830_431_952_019_e-2_f64;
+const ERFC_PA5: f64 = 3.547_830_431_952_019_e-2_f64;
 /// erfc-near-1 numerator coefficient pa₆. Source: fdlibm `s_erf.c`.
 const ERFC_PA6: f64 = -2.166_375_599_832_541_e-3_f64;
 /// erfc-near-1 denominator coefficient qa₁. Source: fdlibm `s_erf.c`.
-const ERFC_QA1: f64 =  1.064_208_804_008_442_3_e-1_f64;
+const ERFC_QA1: f64 = 1.064_208_804_008_442_3_e-1_f64;
 /// erfc-near-1 denominator coefficient qa₂. Source: fdlibm `s_erf.c`.
-const ERFC_QA2: f64 =  5.403_979_177_021_71_e-1_f64;
+const ERFC_QA2: f64 = 5.403_979_177_021_71_e-1_f64;
 /// erfc-near-1 denominator coefficient qa₃. Source: fdlibm `s_erf.c`.
-const ERFC_QA3: f64 =  7.182_865_441_419_625_e-2_f64;
+const ERFC_QA3: f64 = 7.182_865_441_419_625_e-2_f64;
 /// erfc-near-1 denominator coefficient qa₄. Source: fdlibm `s_erf.c`.
-const ERFC_QA4: f64 =  1.261_712_198_087_616_4_e-1_f64;
+const ERFC_QA4: f64 = 1.261_712_198_087_616_4_e-1_f64;
 /// erfc-near-1 denominator coefficient qa₅. Source: fdlibm `s_erf.c`.
-const ERFC_QA5: f64 =  1.363_708_391_202_905e-2_f64;
+const ERFC_QA5: f64 = 1.363_708_391_202_905e-2_f64;
 /// erfc-near-1 denominator coefficient qa₆. Source: fdlibm `s_erf.c`.
-const ERFC_QA6: f64 =  1.198_449_984_679_911_e-2_f64;
+const ERFC_QA6: f64 = 1.198_449_984_679_911_e-2_f64;
 
 // Region 3a: 1.25 ≤ |x| < 1/0.35 ≈ 2.857
 // erfc(x) = exp(-x²-0.5625) * exp((z-x)(z+x) + R/S) / x
@@ -139,19 +139,19 @@ const ERFC_RA6: f64 = -8.128_743_550_630_66e1_f64;
 /// erfc-large (sub-region a) numerator r₇. Source: fdlibm `s_erf.c`.
 const ERFC_RA7: f64 = -9.814_329_344_169_145_e0_f64;
 /// erfc-large (sub-region a) denominator s₁. Source: fdlibm `s_erf.c`.
-const ERFC_SA1: f64 =  1.965_127_166_743_925_7_e1_f64;
+const ERFC_SA1: f64 = 1.965_127_166_743_925_7_e1_f64;
 /// erfc-large (sub-region a) denominator s₂. Source: fdlibm `s_erf.c`.
-const ERFC_SA2: f64 =  1.376_577_541_435_197_e2_f64;
+const ERFC_SA2: f64 = 1.376_577_541_435_197_e2_f64;
 /// erfc-large (sub-region a) denominator s₃. Source: fdlibm `s_erf.c`.
-const ERFC_SA3: f64 =  4.345_658_774_752_292_3_e2_f64;
+const ERFC_SA3: f64 = 4.345_658_774_752_292_3_e2_f64;
 /// erfc-large (sub-region a) denominator s₄. Source: fdlibm `s_erf.c`.
-const ERFC_SA4: f64 =  6.453_872_717_332_679_e2_f64;
+const ERFC_SA4: f64 = 6.453_872_717_332_679_e2_f64;
 /// erfc-large (sub-region a) denominator s₅. Source: fdlibm `s_erf.c`.
-const ERFC_SA5: f64 =  4.290_081_400_275_678_3_e2_f64;
+const ERFC_SA5: f64 = 4.290_081_400_275_678_3_e2_f64;
 /// erfc-large (sub-region a) denominator s₆. Source: fdlibm `s_erf.c`.
-const ERFC_SA6: f64 =  1.086_350_055_417_794_4_e2_f64;
+const ERFC_SA6: f64 = 1.086_350_055_417_794_4_e2_f64;
 /// erfc-large (sub-region a) denominator s₇. Source: fdlibm `s_erf.c`.
-const ERFC_SA7: f64 =  6.570_249_770_319_282_e0_f64;
+const ERFC_SA7: f64 = 6.570_249_770_319_282_e0_f64;
 /// erfc-large (sub-region a) denominator s₈. Source: fdlibm `s_erf.c`.
 const ERFC_SA8: f64 = -6.042_441_521_485_81_e-2_f64;
 
@@ -175,17 +175,17 @@ const ERFC_RB5: f64 = -1.025_095_131_611_077_2_e3_f64;
 /// erfc-large (sub-region b) numerator r₆. Source: fdlibm `s_erf.c`.
 const ERFC_RB6: f64 = -4.835_191_916_086_514_e2_f64;
 /// erfc-large (sub-region b) denominator s₁. Source: fdlibm `s_erf.c`.
-const ERFC_SB1: f64 =  3.033_806_078_756_258_e1_f64;
+const ERFC_SB1: f64 = 3.033_806_078_756_258_e1_f64;
 /// erfc-large (sub-region b) denominator s₂. Source: fdlibm `s_erf.c`.
-const ERFC_SB2: f64 =  3.257_925_129_965_739e2_f64;
+const ERFC_SB2: f64 = 3.257_925_129_965_739e2_f64;
 /// erfc-large (sub-region b) denominator s₃. Source: fdlibm `s_erf.c`.
-const ERFC_SB3: f64 =  1.536_729_586_084_437_e3_f64;
+const ERFC_SB3: f64 = 1.536_729_586_084_437_e3_f64;
 /// erfc-large (sub-region b) denominator s₄. Source: fdlibm `s_erf.c`.
-const ERFC_SB4: f64 =  3.199_858_219_508_596_e3_f64;
+const ERFC_SB4: f64 = 3.199_858_219_508_596_e3_f64;
 /// erfc-large (sub-region b) denominator s₅. Source: fdlibm `s_erf.c`.
-const ERFC_SB5: f64 =  2.553_050_406_433_164_4_e3_f64;
+const ERFC_SB5: f64 = 2.553_050_406_433_164_4_e3_f64;
 /// erfc-large (sub-region b) denominator s₆. Source: fdlibm `s_erf.c`.
-const ERFC_SB6: f64 =  4.745_285_412_069_554_e2_f64;
+const ERFC_SB6: f64 = 4.745_285_412_069_554_e2_f64;
 /// erfc-large (sub-region b) denominator s₇. Source: fdlibm `s_erf.c`.
 const ERFC_SB7: f64 = -2.244_095_244_658_582_e1_f64;
 
@@ -208,7 +208,8 @@ const ERFC_SB7: f64 = -2.244_095_244_658_582_e1_f64;
 /// let density = npdf(0.0_f64);
 /// assert!((density - 0.398_942_280_401_432_7_f64).abs() < 1e-15);
 /// ```
-#[inline(always)]
+#[inline]
+#[must_use]
 pub fn npdf(x: f64) -> f64 {
     let half_x_sq = 0.5_f64 * x * x;
     if half_x_sq > NPDF_OVERFLOW_THRESHOLD {
@@ -227,7 +228,7 @@ pub fn npdf(x: f64) -> f64 {
 /// # Arguments
 ///
 /// * `a` — the argument (any real value)
-#[inline(always)]
+#[inline]
 fn erfc_impl(a: f64) -> f64 {
     let x = a.abs();
 
@@ -242,7 +243,11 @@ fn erfc_impl(a: f64) -> f64 {
         0.0_f64
     };
 
-    if a < 0.0_f64 { 2.0_f64 - result } else { result }
+    if a < 0.0_f64 {
+        2.0_f64 - result
+    } else {
+        result
+    }
 }
 
 /// erfc(x) for 0 ≤ x < 0.84375.
@@ -250,7 +255,7 @@ fn erfc_impl(a: f64) -> f64 {
 /// Computes erf(x) = x + x · P(x²)/Q(x²), then erfc(x) = 1 − erf(x).
 /// P is degree 4, Q is degree 5 (monic leading coefficient 1).
 /// Every Horner step uses `mul_add`.
-#[inline(always)]
+#[inline]
 fn erfc_small(x: f64) -> f64 {
     if x < ERF_TINY {
         return 1.0_f64;
@@ -280,7 +285,7 @@ fn erfc_small(x: f64) -> f64 {
 ///
 /// Uses erfc(x) = erfc(1) + P(|x|−1)/Q(|x|−1) expansion around x = 1.
 /// P is degree 6, Q is degree 6 (monic).
-#[inline(always)]
+#[inline]
 fn erfc_mid(x: f64) -> f64 {
     let s = x - 1.0_f64;
 
@@ -312,7 +317,7 @@ fn erfc_mid(x: f64) -> f64 {
 /// Two sub-regions use different rational polynomial coefficients:
 /// - 1.25 ≤ x < 2.857 (RA/SA, degree 7/8)
 /// - 2.857 ≤ x < 28 (RB/SB, degree 6/7)
-#[inline(always)]
+#[inline]
 fn erfc_large(x: f64) -> f64 {
     let s = 1.0_f64 / (x * x);
 
@@ -388,7 +393,8 @@ fn erfc_large(x: f64) -> f64 {
 /// let half = ncdf(0.0_f64);
 /// assert!((half - 0.5_f64).abs() < 1e-15);
 /// ```
-#[inline(always)]
+#[inline]
+#[must_use]
 pub fn ncdf(x: f64) -> f64 {
     // N(x) = 0.5 * erfc(-x / sqrt(2))
     0.5_f64 * erfc_impl(-x * std::f64::consts::FRAC_1_SQRT_2)
@@ -413,7 +419,8 @@ pub fn ncdf(x: f64) -> f64 {
 /// let half = ncdf_complement(0.0_f64);
 /// assert!((half - 0.5_f64).abs() < 1e-15);
 /// ```
-#[inline(always)]
+#[inline]
+#[must_use]
 pub fn ncdf_complement(x: f64) -> f64 {
     // Q(x) = 1 - N(x) = 0.5 * erfc(x / sqrt(2))
     0.5_f64 * erfc_impl(x * std::f64::consts::FRAC_1_SQRT_2)
@@ -441,7 +448,8 @@ pub fn ncdf_complement(x: f64) -> f64 {
 /// let val = d1(100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64);
 /// assert!((val - 0.25_f64).abs() < 0.01);
 /// ```
-#[inline(always)]
+#[inline]
+#[must_use]
 pub fn d1(spot: f64, strike: f64, rate: f64, div_yield: f64, vol: f64, time: f64) -> f64 {
     let vol_sqrt_t = vol * time.sqrt();
     ((spot / strike).ln() + (rate - div_yield + 0.5_f64 * vol * vol) * time) / vol_sqrt_t
@@ -467,7 +475,8 @@ pub fn d1(spot: f64, strike: f64, rate: f64, div_yield: f64, vol: f64, time: f64
 /// let d2_val = d2(d1_val, 0.20_f64, 1.0_f64);
 /// assert!((d2_val - (d1_val - 0.20_f64)).abs() < 1e-15);
 /// ```
-#[inline(always)]
+#[inline]
+#[must_use]
 pub fn d2(d1_val: f64, vol: f64, time: f64) -> f64 {
     d1_val - vol * time.sqrt()
 }
@@ -475,6 +484,10 @@ pub fn d2(d1_val: f64, vol: f64, time: f64) -> f64 {
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
+// n1_ref/nm1_ref/n05_ref/nm3_ref are reference values named after the
+// N(x) argument they check (N(1), N(-1), N(0.5), N(-3)) — standard
+// notation for this test suite.
+#[allow(clippy::similar_names)]
 mod tests {
     use super::*;
 
@@ -637,10 +650,7 @@ mod tests {
     fn test_npdf_overflow_guard() {
         // npdf(40) should return 0.0 (not NaN, not Inf)
         let val = npdf(40.0_f64);
-        assert!(
-            val == 0.0_f64,
-            "npdf(40) should be exactly 0.0, got {val}",
-        );
+        assert!(val == 0.0_f64, "npdf(40) should be exactly 0.0, got {val}");
         assert!(!val.is_nan(), "npdf(40) must not be NaN");
         assert!(!val.is_infinite(), "npdf(40) must not be Inf");
 
@@ -659,7 +669,9 @@ mod tests {
             (100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64),
             (100.0_f64, 110.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64),
             (50.0_f64, 100.0_f64, 0.05_f64, 0.00_f64, 0.40_f64, 2.0_f64),
-            (200.0_f64, 150.0_f64, -0.01_f64, 0.03_f64, 0.10_f64, 0.25_f64),
+            (
+                200.0_f64, 150.0_f64, -0.01_f64, 0.03_f64, 0.10_f64, 0.25_f64,
+            ),
         ];
 
         for &(spot, strike, rate, div, vol, time) in test_cases {

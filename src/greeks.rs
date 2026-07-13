@@ -68,7 +68,16 @@ use crate::types::{Greeks, OptionParams, OptionType};
 /// let greeks = compute_greeks(&params).unwrap();
 /// assert!(greeks.delta > 0.0_f64 && greeks.delta < 1.0_f64);
 /// ```
-#[inline(always)]
+#[inline]
+// Long by design: all 17 Greeks share the same intermediate values
+// (nd1, nd2, exp_qt, exp_rt, ...), computed once and reused below to
+// avoid redundant ncdf/npdf/exp calls on the hot path.
+#[allow(clippy::too_many_lines)]
+// nd1/nnd1, nd2/nnd2, exp_qt/exp_rt, vega/veta are standard quant
+// notation (N(d1), N(-d1), discount factors, and the named Vega/Veta
+// Greeks) — renaming them would make the formulas harder to audit
+// against the primary sources cited in MATH.md.
+#[allow(clippy::similar_names)]
 pub fn compute_greeks(params: &OptionParams<f64>) -> Result<Greeks<f64>, PricingError> {
     let spot = params.spot;
     let strike = params.strike;
@@ -119,24 +128,20 @@ pub fn compute_greeks(params: &OptionParams<f64>) -> Result<Greeks<f64>, Pricing
     let d1_val = d1(spot, strike, rate, q, vol, time);
     let d2_val = d2(d1_val, vol, time);
 
-    let nd1 = ncdf(d1_val);    // N(d1)
-    let nd2 = ncdf(d2_val);    // N(d2)
-    let nnd1 = ncdf(-d1_val);  // N(-d1)
-    let nnd2 = ncdf(-d2_val);  // N(-d2)
-    let pd1 = npdf(d1_val);    // φ(d1)
-    let pd2 = npdf(d2_val);    // φ(d2)
+    let nd1 = ncdf(d1_val); // N(d1)
+    let nd2 = ncdf(d2_val); // N(d2)
+    let nnd1 = ncdf(-d1_val); // N(-d1)
+    let nnd2 = ncdf(-d2_val); // N(-d2)
+    let pd1 = npdf(d1_val); // φ(d1)
+    let pd2 = npdf(d2_val); // φ(d2)
 
-    let exp_qt = (-q * time).exp();   // exp(-qT)
+    let exp_qt = (-q * time).exp(); // exp(-qT)
     let exp_rt = (-rate * time).exp(); // exp(-rT)
 
     // ── Price (needed for Lambda) ───────────────────────────────────────
     let price = match params.option_type {
-        OptionType::Call => {
-            spot * exp_qt * nd1 - strike * exp_rt * nd2
-        }
-        OptionType::Put => {
-            strike * exp_rt * nnd2 - spot * exp_qt * nnd1
-        }
+        OptionType::Call => spot * exp_qt * nd1 - strike * exp_rt * nd2,
+        OptionType::Put => strike * exp_rt * nnd2 - spot * exp_qt * nnd1,
     };
 
     // ── 1st order Greeks ────────────────────────────────────────────────
@@ -160,12 +165,8 @@ pub fn compute_greeks(params: &OptionParams<f64>) -> Result<Greeks<f64>, Pricing
     // Put:  -(S*exp(-qT)*φ(d1)*σ)/(2√T) + r*K*exp(-rT)*N(-d2) - q*S*exp(-qT)*N(-d1)
     let theta_common = -(spot * exp_qt * pd1 * vol) / (2.0_f64 * sqrt_t);
     let theta_annual = match params.option_type {
-        OptionType::Call => {
-            theta_common - rate * strike * exp_rt * nd2 + q * spot * exp_qt * nd1
-        }
-        OptionType::Put => {
-            theta_common + rate * strike * exp_rt * nnd2 - q * spot * exp_qt * nnd1
-        }
+        OptionType::Call => theta_common - rate * strike * exp_rt * nd2 + q * spot * exp_qt * nd1,
+        OptionType::Put => theta_common + rate * strike * exp_rt * nnd2 - q * spot * exp_qt * nnd1,
     };
     let theta = theta_annual / 365.0_f64;
 
@@ -204,8 +205,7 @@ pub fn compute_greeks(params: &OptionParams<f64>) -> Result<Greeks<f64>, Pricing
     // Call: q*exp(-qT)*N(d1) - exp(-qT)*φ(d1)*(2(r-q)T - d2*σ√T)/(2T*σ√T)
     // Put:  -q*exp(-qT)*N(-d1) + exp(-qT)*φ(d1)*(2(r-q)T - d2*σ√T)/(2T*σ√T)
     let charm = if vol_sqrt_t > 0.0_f64 {
-        let factor = exp_qt * pd1
-            * (2.0_f64 * (rate - q) * time - d2_val * vol_sqrt_t)
+        let factor = exp_qt * pd1 * (2.0_f64 * (rate - q) * time - d2_val * vol_sqrt_t)
             / (2.0_f64 * time * vol_sqrt_t);
         match params.option_type {
             OptionType::Call => q * exp_qt * nd1 - factor,
@@ -218,8 +218,8 @@ pub fn compute_greeks(params: &OptionParams<f64>) -> Result<Greeks<f64>, Pricing
     // Veta (vega decay): dν/dt
     // Veta = -S*exp(-qT)*φ(d1)*√T * [q + (r-q)*d1/(σ√T) - (1 + d1*d2)/(2T)]
     let veta = if vol_sqrt_t > 0.0_f64 {
-        let term = q + (rate - q) * d1_val / vol_sqrt_t
-            - (1.0_f64 + d1_val * d2_val) / (2.0_f64 * time);
+        let term =
+            q + (rate - q) * d1_val / vol_sqrt_t - (1.0_f64 + d1_val * d2_val) / (2.0_f64 * time);
         -spot * exp_qt * pd1 * sqrt_t * term
     } else {
         0.0_f64
@@ -266,7 +266,8 @@ pub fn compute_greeks(params: &OptionParams<f64>) -> Result<Greeks<f64>, Pricing
     // Color = -exp(-qT) * φ(d1) / (2*S*T*σ√T)
     //         * (2qT + 1 + d1*(2(r-q)T - d2*σ√T) / (σ√T))
     let color = if vol_sqrt_t > 0.0_f64 && spot > 0.0_f64 {
-        let inner = 2.0_f64 * q * time + 1.0_f64
+        let inner = 2.0_f64 * q * time
+            + 1.0_f64
             + d1_val * (2.0_f64 * (rate - q) * time - d2_val * vol_sqrt_t) / vol_sqrt_t;
         -exp_qt * pd1 / (2.0_f64 * spot * time * vol_sqrt_t) * inner
     } else {
@@ -375,7 +376,10 @@ mod tests {
         assert!(
             (gc.delta - gp.delta - exp_qt).abs() < 1e-10_f64,
             "delta parity: {} - {} = {}, expected {}",
-            gc.delta, gp.delta, gc.delta - gp.delta, exp_qt
+            gc.delta,
+            gp.delta,
+            gc.delta - gp.delta,
+            exp_qt
         );
     }
 
@@ -434,13 +438,21 @@ mod tests {
     #[test]
     fn test_theta_call_is_negative() {
         let g = compute_greeks(&baseline_call()).unwrap();
-        assert!(g.theta < 0.0_f64, "theta call must be negative, got {}", g.theta);
+        assert!(
+            g.theta < 0.0_f64,
+            "theta call must be negative, got {}",
+            g.theta
+        );
     }
 
     #[test]
     fn test_theta_put_is_negative() {
         let g = compute_greeks(&baseline_put()).unwrap();
-        assert!(g.theta < 0.0_f64, "theta put must be negative, got {}", g.theta);
+        assert!(
+            g.theta < 0.0_f64,
+            "theta put must be negative, got {}",
+            g.theta
+        );
     }
 
     #[test]
@@ -450,7 +462,8 @@ mod tests {
         assert!(
             gc.theta < gp.theta,
             "call theta ({}) should be more negative than put theta ({})",
-            gc.theta, gp.theta
+            gc.theta,
+            gp.theta
         );
     }
 
@@ -473,13 +486,21 @@ mod tests {
     #[test]
     fn test_epsilon_call_negative() {
         let g = compute_greeks(&baseline_call()).unwrap();
-        assert!(g.epsilon < 0.0_f64, "epsilon call must be negative, got {}", g.epsilon);
+        assert!(
+            g.epsilon < 0.0_f64,
+            "epsilon call must be negative, got {}",
+            g.epsilon
+        );
     }
 
     #[test]
     fn test_epsilon_put_positive() {
         let g = compute_greeks(&baseline_put()).unwrap();
-        assert!(g.epsilon > 0.0_f64, "epsilon put must be positive, got {}", g.epsilon);
+        assert!(
+            g.epsilon > 0.0_f64,
+            "epsilon put must be positive, got {}",
+            g.epsilon
+        );
     }
 
     // ── Vanna golden values ─────────────────────────────────────────────
@@ -501,13 +522,21 @@ mod tests {
     #[test]
     fn test_charm_call_negative() {
         let g = compute_greeks(&baseline_call()).unwrap();
-        assert!(g.charm < 0.0_f64, "charm call should be negative for ATM, got {}", g.charm);
+        assert!(
+            g.charm < 0.0_f64,
+            "charm call should be negative for ATM, got {}",
+            g.charm
+        );
     }
 
     #[test]
     fn test_charm_put_positive() {
         let g = compute_greeks(&baseline_put()).unwrap();
-        assert!(g.charm > 0.0_f64, "charm put should be positive for ATM, got {}", g.charm);
+        assert!(
+            g.charm > 0.0_f64,
+            "charm put should be positive for ATM, got {}",
+            g.charm
+        );
     }
 
     // ── Vomma golden values ─────────────────────────────────────────────
@@ -534,7 +563,8 @@ mod tests {
         assert!(
             (g.vomma - expected).abs() < 1e-10_f64,
             "vomma identity: got {}, expected {}",
-            g.vomma, expected
+            g.vomma,
+            expected
         );
     }
 
@@ -571,13 +601,21 @@ mod tests {
     #[test]
     fn test_dual_delta_call_negative() {
         let g = compute_greeks(&baseline_call()).unwrap();
-        assert!(g.dual_delta < 0.0_f64, "dual_delta call must be negative, got {}", g.dual_delta);
+        assert!(
+            g.dual_delta < 0.0_f64,
+            "dual_delta call must be negative, got {}",
+            g.dual_delta
+        );
     }
 
     #[test]
     fn test_dual_delta_put_positive() {
         let g = compute_greeks(&baseline_put()).unwrap();
-        assert!(g.dual_delta > 0.0_f64, "dual_delta put must be positive, got {}", g.dual_delta);
+        assert!(
+            g.dual_delta > 0.0_f64,
+            "dual_delta put must be positive, got {}",
+            g.dual_delta
+        );
     }
 
     // ── Dual gamma ──────────────────────────────────────────────────────
@@ -597,7 +635,11 @@ mod tests {
     #[test]
     fn test_dual_gamma_positive() {
         let g = compute_greeks(&baseline_call()).unwrap();
-        assert!(g.dual_gamma > 0.0_f64, "dual_gamma must be positive, got {}", g.dual_gamma);
+        assert!(
+            g.dual_gamma > 0.0_f64,
+            "dual_gamma must be positive, got {}",
+            g.dual_gamma
+        );
     }
 
     // ── Input validation ────────────────────────────────────────────────
@@ -606,7 +648,10 @@ mod tests {
     fn test_negative_spot_returns_error() {
         let mut p = baseline_call();
         p.spot = -1.0_f64;
-        assert!(matches!(compute_greeks(&p), Err(PricingError::NegativeSpot)));
+        assert!(matches!(
+            compute_greeks(&p),
+            Err(PricingError::NegativeSpot)
+        ));
     }
 
     #[test]
@@ -749,7 +794,11 @@ mod tests {
     #[test]
     fn test_lambda_call_positive() {
         let g = compute_greeks(&baseline_call()).unwrap();
-        assert!(g.lambda > 0.0_f64, "lambda call must be positive, got {}", g.lambda);
+        assert!(
+            g.lambda > 0.0_f64,
+            "lambda call must be positive, got {}",
+            g.lambda
+        );
     }
 
     #[test]
@@ -757,7 +806,11 @@ mod tests {
         // Lambda for put is delta*S/V. Delta < 0 and price > 0, but S > 0.
         // Actually: put delta < 0, so lambda = (neg * pos) / pos = neg.
         let g = compute_greeks(&baseline_put()).unwrap();
-        assert!(g.lambda < 0.0_f64, "lambda put must be negative, got {}", g.lambda);
+        assert!(
+            g.lambda < 0.0_f64,
+            "lambda put must be negative, got {}",
+            g.lambda
+        );
     }
 
     // ── Vanna cross-derivative check (finite difference) ────────────────
@@ -775,8 +828,7 @@ mod tests {
         let analytic_vanna = compute_greeks(&baseline_call()).unwrap().vanna;
         assert!(
             (analytic_vanna - fd_vanna).abs() < 0.01_f64,
-            "vanna: analytic={}, fd={}",
-            analytic_vanna, fd_vanna
+            "vanna: analytic={analytic_vanna}, fd={fd_vanna}"
         );
     }
 

@@ -38,20 +38,25 @@ pub trait Float:
     fn one() -> Self;
 
     /// Natural logarithm.
+    #[must_use]
     fn ln(self) -> Self;
 
     /// Exponential function.
+    #[must_use]
     fn exp(self) -> Self;
 
     /// Square root.
+    #[must_use]
     fn sqrt(self) -> Self;
 
     /// Absolute value.
+    #[must_use]
     fn abs(self) -> Self;
 
     /// Fused multiply-add: `self * a + b`.
     ///
     /// Maps to the hardware FMA instruction when available.
+    #[must_use]
     fn mul_add(self, a: Self, b: Self) -> Self;
 
     /// Converts from an `f64` constant. Used for embedding typed literals.
@@ -71,124 +76,125 @@ pub trait Float:
 }
 
 impl Float for f64 {
-    #[inline(always)]
+    #[inline]
     fn zero() -> Self {
         0.0_f64
     }
 
-    #[inline(always)]
+    #[inline]
     fn one() -> Self {
         1.0_f64
     }
 
-    #[inline(always)]
+    #[inline]
     fn ln(self) -> Self {
         f64::ln(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn exp(self) -> Self {
         f64::exp(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn sqrt(self) -> Self {
         f64::sqrt(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn abs(self) -> Self {
         f64::abs(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn mul_add(self, a: Self, b: Self) -> Self {
         f64::mul_add(self, a, b)
     }
 
-    #[inline(always)]
+    #[inline]
     fn from_f64(val: f64) -> Self {
         val
     }
 
-    #[inline(always)]
+    #[inline]
     fn to_f64(self) -> f64 {
         self
     }
 
-    #[inline(always)]
+    #[inline]
     fn pi() -> Self {
         core::f64::consts::PI
     }
 
-    #[inline(always)]
+    #[inline]
     fn is_nan(self) -> bool {
         f64::is_nan(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn is_infinite(self) -> bool {
         f64::is_infinite(self)
     }
 }
 
 impl Float for f32 {
-    #[inline(always)]
+    #[inline]
     fn zero() -> Self {
         0.0_f32
     }
 
-    #[inline(always)]
+    #[inline]
     fn one() -> Self {
         1.0_f32
     }
 
-    #[inline(always)]
+    #[inline]
     fn ln(self) -> Self {
         f32::ln(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn exp(self) -> Self {
         f32::exp(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn sqrt(self) -> Self {
         f32::sqrt(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn abs(self) -> Self {
         f32::abs(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn mul_add(self, a: Self, b: Self) -> Self {
         f32::mul_add(self, a, b)
     }
 
-    #[inline(always)]
+    #[inline]
+    #[allow(clippy::cast_possible_truncation)] // Intentional narrowing to f32 by design.
     fn from_f64(val: f64) -> Self {
         val as f32
     }
 
-    #[inline(always)]
+    #[inline]
     fn to_f64(self) -> f64 {
         f64::from(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn pi() -> Self {
         core::f32::consts::PI
     }
 
-    #[inline(always)]
+    #[inline]
     fn is_nan(self) -> bool {
         f32::is_nan(self)
     }
 
-    #[inline(always)]
+    #[inline]
     fn is_infinite(self) -> bool {
         f32::is_infinite(self)
     }
@@ -427,42 +433,42 @@ pub trait ImpliedVol {
 // ─── Trait implementations ──────────────────────────────────────────────────
 
 impl Pricing for OptionParams<f64> {
-    #[inline(always)]
+    #[inline]
     fn price(&self) -> Result<f64, PricingError> {
         crate::models::black_scholes::price(self)
     }
 }
 
 impl GreeksCalc for OptionParams<f64> {
-    #[inline(always)]
+    #[inline]
     fn greeks(&self) -> Result<Greeks<f64>, PricingError> {
         crate::greeks::compute_greeks(self)
     }
 }
 
 impl ImpliedVol for OptionParams<f64> {
-    #[inline(always)]
+    #[inline]
     fn implied_vol(&self, market_price: f64, solver: IvSolver) -> Result<f64, IvError> {
         crate::iv::implied_vol(self, market_price, solver)
     }
 }
 
 impl Pricing for Black76Params {
-    #[inline(always)]
+    #[inline]
     fn price(&self) -> Result<f64, PricingError> {
         crate::models::black76::price(self)
     }
 }
 
 impl Pricing for BachelierParams {
-    #[inline(always)]
+    #[inline]
     fn price(&self) -> Result<f64, PricingError> {
         crate::models::bachelier::price(self)
     }
 }
 
 impl Pricing for DisplacedParams {
-    #[inline(always)]
+    #[inline]
     fn price(&self) -> Result<f64, PricingError> {
         crate::models::displaced::price(self)
     }
@@ -503,7 +509,7 @@ pub enum Model {
 }
 
 impl Pricing for Model {
-    #[inline(always)]
+    #[inline]
     fn price(&self) -> Result<f64, PricingError> {
         match self {
             Self::BlackScholes(p) => p.price(),
@@ -515,6 +521,10 @@ impl Pricing for Model {
 }
 
 #[cfg(test)]
+// These tests assert exact equality between literals and values that are
+// bit-identical by construction (no arithmetic/rounding occurs between the
+// two sides), so `float_cmp`'s general warning does not apply here.
+#[allow(clippy::float_cmp)]
 mod tests {
     use super::*;
 
@@ -664,15 +674,15 @@ mod tests {
 
     #[test]
     fn test_float_f64_from_f64() {
-        let val = f64::from_f64(3.14_f64);
-        assert!((val - 3.14_f64).abs() < 1e-15_f64);
+        let val = f64::from_f64(3.25_f64);
+        assert!((val - 3.25_f64).abs() < 1e-15_f64);
     }
 
     #[test]
     fn test_float_f32_roundtrip() {
-        let val = f32::from_f64(3.14_f64);
+        let val = f32::from_f64(3.25_f64);
         let back = val.to_f64();
-        assert!((back - 3.14_f64).abs() < 1e-5_f64);
+        assert!((back - 3.25_f64).abs() < 1e-5_f64);
     }
 
     #[test]
@@ -717,7 +727,10 @@ mod tests {
             time: 1.0_f64,
         };
         let p = params.price().unwrap();
-        assert!((p - 9.2270_f64).abs() < 1e-4_f64, "BS call via trait: got {p}");
+        assert!(
+            (p - 9.2270_f64).abs() < 1e-4_f64,
+            "BS call via trait: got {p}"
+        );
     }
 
     #[test]

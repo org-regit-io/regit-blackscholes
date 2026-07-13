@@ -13,14 +13,15 @@
 //! | IV solve — standard     | < 150 ns |
 //! | IV solve — Jackel path  | < 300 ns |
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use regit_blackscholes::greeks;
-use regit_blackscholes::iv::{implied_vol, IvSolver};
+use regit_blackscholes::iv::{IvSolver, implied_vol};
 use regit_blackscholes::math::{ncdf, npdf};
 use regit_blackscholes::models::bachelier::{self, BachelierParams};
-use regit_blackscholes::models::black76::{self, Black76Params};
 use regit_blackscholes::models::black_scholes;
+use regit_blackscholes::models::black76::{self, Black76Params};
 use regit_blackscholes::types::{OptionParams, OptionType};
+use std::hint::black_box;
 
 // ─── Baseline parameters ────────────────────────────────────────────────────
 
@@ -67,11 +68,11 @@ fn bench_math(c: &mut Criterion) {
 
     // Target: < 5 ns
     group.bench_function("ncdf", |b| {
-        b.iter(|| ncdf(black_box(0.25_f64)))
+        b.iter(|| ncdf(black_box(0.25_f64)));
     });
 
     group.bench_function("npdf", |b| {
-        b.iter(|| npdf(black_box(0.25_f64)))
+        b.iter(|| npdf(black_box(0.25_f64)));
     });
 
     group.finish();
@@ -85,12 +86,12 @@ fn bench_pricing(c: &mut Criterion) {
     // Target: < 15 ns
     group.bench_function("bs_call_price", |b| {
         let params = atm_call();
-        b.iter(|| black_scholes::price(black_box(&params)))
+        b.iter(|| black_scholes::price(black_box(&params)));
     });
 
     group.bench_function("bs_put_price", |b| {
         let params = atm_put();
-        b.iter(|| black_scholes::price(black_box(&params)))
+        b.iter(|| black_scholes::price(black_box(&params)));
     });
 
     group.bench_function("black76_price", |b| {
@@ -102,7 +103,7 @@ fn bench_pricing(c: &mut Criterion) {
             vol: 0.20_f64,
             time: 1.0_f64,
         };
-        b.iter(|| black76::price(black_box(&params)))
+        b.iter(|| black76::price(black_box(&params)));
     });
 
     group.bench_function("bachelier_price", |b| {
@@ -114,7 +115,7 @@ fn bench_pricing(c: &mut Criterion) {
             normal_vol: 5.0_f64,
             time: 1.0_f64,
         };
-        b.iter(|| bachelier::price(black_box(&params)))
+        b.iter(|| bachelier::price(black_box(&params)));
     });
 
     group.finish();
@@ -128,12 +129,12 @@ fn bench_greeks(c: &mut Criterion) {
     // Target: < 80 ns
     group.bench_function("greeks_call", |b| {
         let params = atm_call();
-        b.iter(|| greeks::compute_greeks(black_box(&params)))
+        b.iter(|| greeks::compute_greeks(black_box(&params)));
     });
 
     group.bench_function("greeks_put", |b| {
         let params = atm_put();
-        b.iter(|| greeks::compute_greeks(black_box(&params)))
+        b.iter(|| greeks::compute_greeks(black_box(&params)));
     });
 
     group.finish();
@@ -163,7 +164,7 @@ fn bench_iv(c: &mut Criterion) {
                 black_box(atm_market_price),
                 IvSolver::Auto,
             )
-        })
+        });
     });
 
     // Target: < 300 ns (Jackel / deep OTM path)
@@ -174,7 +175,7 @@ fn bench_iv(c: &mut Criterion) {
                 black_box(deep_otm_market_price),
                 IvSolver::Auto,
             )
-        })
+        });
     });
 
     group.bench_function("iv_atm_halley", |b| {
@@ -184,7 +185,7 @@ fn bench_iv(c: &mut Criterion) {
                 black_box(atm_market_price),
                 IvSolver::Halley,
             )
-        })
+        });
     });
 
     group.bench_function("iv_atm_newton", |b| {
@@ -194,7 +195,7 @@ fn bench_iv(c: &mut Criterion) {
                 black_box(atm_market_price),
                 IvSolver::Newton,
             )
-        })
+        });
     });
 
     group.bench_function("iv_atm_brent", |b| {
@@ -204,7 +205,7 @@ fn bench_iv(c: &mut Criterion) {
                 black_box(atm_market_price),
                 IvSolver::Brent,
             )
-        })
+        });
     });
 
     group.finish();

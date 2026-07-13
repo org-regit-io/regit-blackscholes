@@ -110,7 +110,12 @@ pub struct Black76Params {
 /// let p = price(&params).unwrap();
 /// assert!(p > 0.0_f64);
 /// ```
-#[inline(always)]
+#[inline]
+// f, k, r, sigma, t — standard Black-76 notation, matching MATH.md.
+#[allow(clippy::many_single_char_names)]
+// nd1/nnd1, nd2/nnd2 are standard N(d1)/N(-d1), N(d2)/N(-d2)
+// notation; renaming would obscure the formula in MATH.md.
+#[allow(clippy::similar_names)]
 pub fn price(params: &Black76Params) -> Result<f64, PricingError> {
     // ── Input validation ─────────────────────────────────────────────
     if params.forward < 0.0_f64 {
@@ -136,10 +141,18 @@ pub fn price(params: &Black76Params) -> Result<f64, PricingError> {
     if t == 0.0_f64 {
         let intrinsic = match params.option_type {
             OptionType::Call => {
-                if f > k { f - k } else { 0.0_f64 }
+                if f > k {
+                    f - k
+                } else {
+                    0.0_f64
+                }
             }
             OptionType::Put => {
-                if k > f { k - f } else { 0.0_f64 }
+                if k > f {
+                    k - f
+                } else {
+                    0.0_f64
+                }
             }
         };
         return Err(PricingError::IntrinsicOnly { intrinsic });
@@ -154,10 +167,18 @@ pub fn price(params: &Black76Params) -> Result<f64, PricingError> {
     if sigma_sqrt_t == 0.0_f64 {
         let intrinsic = match params.option_type {
             OptionType::Call => {
-                if f > k { f - k } else { 0.0_f64 }
+                if f > k {
+                    f - k
+                } else {
+                    0.0_f64
+                }
             }
             OptionType::Put => {
-                if k > f { k - f } else { 0.0_f64 }
+                if k > f {
+                    k - f
+                } else {
+                    0.0_f64
+                }
             }
         };
         return Ok(discount * intrinsic);
@@ -318,7 +339,11 @@ mod tests {
         let c = price(&call_params).unwrap();
         let p = price(&put_params).unwrap();
         let parity = (-0.05_f64 * 1.0_f64).exp() * (100.0_f64 - 105.0_f64);
-        assert!((c - p - parity).abs() < 1e-10_f64, "parity: C-P={}, expected={parity}", c - p);
+        assert!(
+            (c - p - parity).abs() < 1e-10_f64,
+            "parity: C-P={}, expected={parity}",
+            c - p
+        );
     }
 
     #[test]
@@ -338,7 +363,11 @@ mod tests {
         let c = price(&call_params).unwrap();
         let p = price(&put_params).unwrap();
         let parity = (-0.05_f64 * 1.0_f64).exp() * (120.0_f64 - 100.0_f64);
-        assert!((c - p - parity).abs() < 1e-10_f64, "parity: C-P={}, expected={parity}", c - p);
+        assert!(
+            (c - p - parity).abs() < 1e-10_f64,
+            "parity: C-P={}, expected={parity}",
+            c - p
+        );
     }
 
     // ── Input validation ─────────────────────────────────────────────
@@ -445,7 +474,10 @@ mod tests {
         };
         let p = price(&params).unwrap();
         let expected = (-0.05_f64).exp() * 10.0_f64;
-        assert!((p - expected).abs() < 1e-10_f64, "zero vol: got {p}, expected {expected}");
+        assert!(
+            (p - expected).abs() < 1e-10_f64,
+            "zero vol: got {p}, expected {expected}"
+        );
     }
 
     #[test]

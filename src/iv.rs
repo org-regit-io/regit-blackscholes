@@ -111,7 +111,7 @@ pub enum IvSolver {
 ///
 /// Call: max(S*exp(-qT) - K*exp(-rT), 0)
 /// Put:  max(K*exp(-rT) - S*exp(-qT), 0)
-#[inline(always)]
+#[inline]
 fn intrinsic_value(
     spot: f64,
     strike: f64,
@@ -165,7 +165,7 @@ fn intrinsic_value(
 ///
 /// - Corrado & Miller, "A note on a simple, accurate formula to compute
 ///   implied standard deviations", *JBF* 20 (1996), pp. 595-603
-#[inline(always)]
+#[inline]
 fn corrado_miller_guess(
     spot: f64,
     strike: f64,
@@ -215,23 +215,28 @@ fn corrado_miller_guess(
     // Full Corrado-Miller with correction:
     // inner = c_adj² - diff²/π
     let inner = c_adj.mul_add(c_adj, -(diff * diff) / core::f64::consts::PI);
-    let correction = if inner > 0.0_f64 { inner.sqrt() } else { 0.0_f64 };
+    let correction = if inner > 0.0_f64 {
+        inner.sqrt()
+    } else {
+        0.0_f64
+    };
 
     let sigma = SQRT_2PI / time.sqrt() * (c_adj + correction) / (forward_s + forward_k);
 
-    if sigma > INIT_GUESS_FLOOR { sigma } else { INIT_GUESS_FLOOR }
+    if sigma > INIT_GUESS_FLOOR {
+        sigma
+    } else {
+        INIT_GUESS_FLOOR
+    }
 }
 
 // ─── BS price at given vol (thin wrapper) ────────────────────────────────────
 
 /// Computes BS price for a given vol, reusing the params structure.
 /// Returns the price or an error.
-#[inline(always)]
+#[inline]
 fn bs_price_at_vol(params: &OptionParams<f64>, vol: f64) -> Result<f64, IvError> {
-    let trial = OptionParams {
-        vol,
-        ..*params
-    };
+    let trial = OptionParams { vol, ..*params };
     black_scholes::price(&trial).map_err(|_| IvError::NoSolution)
 }
 
@@ -241,7 +246,7 @@ fn bs_price_at_vol(params: &OptionParams<f64>, vol: f64) -> Result<f64, IvError>
 ///
 /// This is the standard Black-Scholes vega used for Newton/Halley iteration.
 /// Intermediates d1, phi(d1) are computed here since the solver needs them.
-#[inline(always)]
+#[inline]
 fn bs_vega(
     spot: f64,
     strike: f64,
@@ -278,6 +283,9 @@ fn bs_vega(
 /// Returns [`IvError::MaxIterationsReached`] if convergence fails after
 /// [`MAX_ITER_HALLEY_NEWTON`] iterations.
 /// Returns [`IvError::NearZeroVega`] if vega drops below [`VEGA_FLOOR`].
+// S, K, r, q, T — standard option-pricing notation, matching the
+// primary sources cited in MATH.md.
+#[allow(clippy::many_single_char_names)]
 fn solve_halley(
     params: &OptionParams<f64>,
     market_price: f64,
@@ -347,6 +355,9 @@ fn solve_halley(
 ///
 /// Returns [`IvError::MaxIterationsReached`] if convergence fails.
 /// Returns [`IvError::NearZeroVega`] if vega drops below threshold.
+// S, K, r, q, T — standard option-pricing notation, matching the
+// primary sources cited in MATH.md.
+#[allow(clippy::many_single_char_names)]
 fn solve_newton(
     params: &OptionParams<f64>,
     market_price: f64,
@@ -409,6 +420,9 @@ fn solve_newton(
 /// # Errors
 ///
 /// Returns [`IvError::MaxIterationsReached`] if refinement fails.
+// S, K, r, q, T — standard option-pricing notation, matching the
+// primary sources cited in MATH.md.
+#[allow(clippy::many_single_char_names)]
 fn solve_jackel(
     params: &OptionParams<f64>,
     market_price: f64,
@@ -547,10 +561,10 @@ fn solve_jackel(
 /// Returns [`IvError::MaxIterationsReached`] if the bracket does not
 /// converge within [`MAX_ITER_BRENT`] iterations.
 /// Returns [`IvError::NoSolution`] if no root exists in the bracket.
-fn solve_brent(
-    params: &OptionParams<f64>,
-    market_price: f64,
-) -> Result<f64, IvError> {
+// S, K, r, q, T — standard option-pricing notation, matching the
+// primary sources cited in MATH.md.
+#[allow(clippy::many_single_char_names)]
+fn solve_brent(params: &OptionParams<f64>, market_price: f64) -> Result<f64, IvError> {
     let mut a = IV_LOWER;
     let mut b = IV_UPPER;
 
@@ -695,7 +709,10 @@ fn solve_brent(
 /// let iv = implied_vol(&params, market_price, IvSolver::Auto).unwrap();
 /// assert!((iv - 0.20_f64).abs() < 1e-6);
 /// ```
-#[inline(always)]
+#[inline]
+// S, K, r, q, T — standard option-pricing notation, matching the
+// primary sources cited in MATH.md.
+#[allow(clippy::many_single_char_names)]
 pub fn implied_vol(
     params: &OptionParams<f64>,
     market_price: f64,
@@ -795,12 +812,7 @@ mod tests {
     }
 
     /// Helper: price at given params, then recover IV and check round-trip.
-    fn assert_iv_roundtrip(
-        params: &OptionParams<f64>,
-        solver: IvSolver,
-        tol: f64,
-        label: &str,
-    ) {
+    fn assert_iv_roundtrip(params: &OptionParams<f64>, solver: IvSolver, tol: f64, label: &str) {
         let target_vol = params.vol;
         let market_price = price(params).unwrap();
         let recovered = implied_vol(params, market_price, solver).unwrap();
@@ -1006,7 +1018,14 @@ mod tests {
             time: 1.0_f64,
         };
         // Intrinsic = S*exp(-qT) - K*exp(-rT) ≈ 147.03 - 95.12 ≈ 51.91
-        let intrinsic = intrinsic_value(150.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 1.0_f64, OptionType::Call);
+        let intrinsic = intrinsic_value(
+            150.0_f64,
+            100.0_f64,
+            0.05_f64,
+            0.02_f64,
+            1.0_f64,
+            OptionType::Call,
+        );
         // Price below intrinsic
         let below_price = intrinsic - 1.0_f64;
         let result = implied_vol(&p, below_price, IvSolver::Auto);
@@ -1036,7 +1055,11 @@ mod tests {
     #[test]
     fn test_corrado_miller_atm_reasonable() {
         let guess = corrado_miller_guess(
-            100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 1.0_f64,
+            100.0_f64,
+            100.0_f64,
+            0.05_f64,
+            0.02_f64,
+            1.0_f64,
             price(&atm_call()).unwrap(),
             OptionType::Call,
         );
@@ -1055,8 +1078,13 @@ mod tests {
         };
         let mp = price(&p).unwrap();
         let guess = corrado_miller_guess(
-            100.0_f64, 110.0_f64, 0.05_f64, 0.02_f64, 1.0_f64,
-            mp, OptionType::Call,
+            100.0_f64,
+            110.0_f64,
+            0.05_f64,
+            0.02_f64,
+            1.0_f64,
+            mp,
+            OptionType::Call,
         );
         assert!(
             guess > 0.0_f64,

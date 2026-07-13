@@ -1,24 +1,32 @@
 [package]
 name        = "regit-blackscholes"
-version     = "1.0.3"
-edition     = "2021"
-rust-version = "1.70"
+version     = "1.1.0"
+edition     = "2024"
+rust-version = "1.85"
 license     = "Apache-2.0"
 description = "Zero-dependency Black-Scholes options pricing engine. Pure Rust."
 repository  = "https://github.com/org-regit-io/regit-blackscholes"
+homepage    = "https://www.regit.io"
+authors     = ["Nicolas Koenig <nicolas.koenig@regit.io>"]
 keywords    = ["black-scholes", "blackscholes", "options", "finance", "derivatives"]
 categories  = ["finance", "mathematics", "science"]
 
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+
 [features]
 default = []
+# Reserved for a future SIMD batch-pricing PR. Currently pulls in `wide`
+# but is otherwise unused; there are no functional changes when enabled.
 simd    = ["dep:wide"]
 
 [dependencies]
-wide = { version = "0.7", optional = true }
+# Optional, gated behind the reserved `simd` feature (see [features] above).
+wide = { version = "1.5", optional = true }
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
-proptest  = "1.4"
+criterion = { version = "0.8", features = ["html_reports"] }
+proptest  = "1.11"
 approx    = "0.5"
 
 [[bench]]

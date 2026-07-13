@@ -74,8 +74,20 @@ pub fn validate<F: Float>(params: &OptionParams<F>) -> Result<(), PricingError> 
         let s = params.spot.to_f64();
         let k = params.strike.to_f64();
         let intrinsic = match params.option_type {
-            OptionType::Call => if s > k { s - k } else { 0.0_f64 },
-            OptionType::Put => if k > s { k - s } else { 0.0_f64 },
+            OptionType::Call => {
+                if s > k {
+                    s - k
+                } else {
+                    0.0_f64
+                }
+            }
+            OptionType::Put => {
+                if k > s {
+                    k - s
+                } else {
+                    0.0_f64
+                }
+            }
         };
         return Err(PricingError::IntrinsicOnly { intrinsic });
     }
@@ -112,7 +124,13 @@ pub fn validate<F: Float>(params: &OptionParams<F>) -> Result<(), PricingError> 
 /// let p = price(&params).unwrap();
 /// assert!((p - 9.2270_f64).abs() < 1e-4_f64);
 /// ```
-#[inline(always)]
+#[inline]
+// s, k, r, q, sigma, t — standard Black-Scholes-Merton notation,
+// matching MATH.md.
+#[allow(clippy::many_single_char_names)]
+// nd1/nnd1, nd2/nnd2 are standard N(d1)/N(-d1), N(d2)/N(-d2)
+// notation; renaming would obscure the formula in MATH.md.
+#[allow(clippy::similar_names)]
 pub fn price<F: Float>(params: &OptionParams<F>) -> Result<f64, PricingError> {
     validate(params)?;
 
@@ -160,22 +178,21 @@ pub fn price<F: Float>(params: &OptionParams<F>) -> Result<f64, PricingError> {
     let nnd2 = 1.0_f64 - nd2; // N(-d2) via complement
 
     let value = match params.option_type {
-        OptionType::Call => {
-            (s * df_q).mul_add(nd1, -(k * df_r * nd2))
-        }
-        OptionType::Put => {
-            (k * df_r).mul_add(nnd2, -(s * df_q * nnd1))
-        }
+        OptionType::Call => (s * df_q).mul_add(nd1, -(k * df_r * nd2)),
+        OptionType::Put => (k * df_r).mul_add(nnd2, -(s * df_q * nnd1)),
     };
 
     Ok(value)
 }
 
 #[cfg(test)]
+// s, k, r, q, sigma, t, c, p — standard Black-Scholes-Merton notation
+// (spot, strike, rate, div yield, vol, time, call price, put price).
+#[allow(clippy::many_single_char_names)]
 mod tests {
     use super::*;
 
-    /// QuantLib rounding tolerance for golden values.
+    /// `QuantLib` rounding tolerance for golden values.
     const LOOSE: f64 = 1e-4_f64;
 
     fn call_params(s: f64, k: f64, r: f64, q: f64, sigma: f64, t: f64) -> OptionParams<f64> {
@@ -253,7 +270,10 @@ mod tests {
             100.0_f64, 100.0_f64, -0.01_f64, 0.00_f64, 0.20_f64, 1.0_f64,
         ))
         .unwrap();
-        assert!((p - 7.5131_f64).abs() < LOOSE, "Negative rate call: got {p}");
+        assert!(
+            (p - 7.5131_f64).abs() < LOOSE,
+            "Negative rate call: got {p}"
+        );
     }
 
     #[test]
@@ -271,7 +291,10 @@ mod tests {
             100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.25_f64,
         ))
         .unwrap();
-        assert!((p - 4.3359_f64).abs() < LOOSE, "Short maturity call: got {p}");
+        assert!(
+            (p - 4.3359_f64).abs() < LOOSE,
+            "Short maturity call: got {p}"
+        );
     }
 
     #[test]
@@ -289,7 +312,10 @@ mod tests {
             100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 2.0_f64,
         ))
         .unwrap();
-        assert!((p - 13.5218_f64).abs() < LOOSE, "Long maturity call: got {p}");
+        assert!(
+            (p - 13.5218_f64).abs() < LOOSE,
+            "Long maturity call: got {p}"
+        );
     }
 
     #[test]
@@ -305,29 +331,33 @@ mod tests {
 
     #[test]
     fn test_price_t_zero_returns_intrinsic_call_itm() {
-        let params = call_params(
-            110.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.0_f64,
-        );
+        let params = call_params(110.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.0_f64);
         let err = price(&params).unwrap_err();
-        assert_eq!(err, PricingError::IntrinsicOnly { intrinsic: 10.0_f64 });
+        assert_eq!(
+            err,
+            PricingError::IntrinsicOnly {
+                intrinsic: 10.0_f64
+            }
+        );
     }
 
     #[test]
     fn test_price_t_zero_returns_intrinsic_call_otm() {
-        let params = call_params(
-            90.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.0_f64,
-        );
+        let params = call_params(90.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.0_f64);
         let err = price(&params).unwrap_err();
         assert_eq!(err, PricingError::IntrinsicOnly { intrinsic: 0.0_f64 });
     }
 
     #[test]
     fn test_price_t_zero_returns_intrinsic_put_itm() {
-        let params = put_params(
-            90.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.0_f64,
-        );
+        let params = put_params(90.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 0.0_f64);
         let err = price(&params).unwrap_err();
-        assert_eq!(err, PricingError::IntrinsicOnly { intrinsic: 10.0_f64 });
+        assert_eq!(
+            err,
+            PricingError::IntrinsicOnly {
+                intrinsic: 10.0_f64
+            }
+        );
     }
 
     #[test]
@@ -337,8 +367,7 @@ mod tests {
         ))
         .unwrap();
         // Discounted intrinsic: S*exp(-qT) - K*exp(-rT)
-        let expected =
-            110.0_f64 * (-0.02_f64).exp() - 100.0_f64 * (-0.05_f64).exp();
+        let expected = 110.0_f64 * (-0.02_f64).exp() - 100.0_f64 * (-0.05_f64).exp();
         assert!(
             (p - expected).abs() < 1e-10_f64,
             "sigma=0 ITM call: got {p}, expected {expected}"
@@ -351,10 +380,7 @@ mod tests {
             90.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.0_f64, 1.0_f64,
         ))
         .unwrap();
-        assert!(
-            (p - 0.0_f64).abs() < 1e-10_f64,
-            "sigma=0 OTM call: got {p}"
-        );
+        assert!((p - 0.0_f64).abs() < 1e-10_f64, "sigma=0 OTM call: got {p}");
     }
 
     #[test]
@@ -363,8 +389,7 @@ mod tests {
             90.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.0_f64, 1.0_f64,
         ))
         .unwrap();
-        let expected =
-            100.0_f64 * (-0.05_f64).exp() - 90.0_f64 * (-0.02_f64).exp();
+        let expected = 100.0_f64 * (-0.05_f64).exp() - 90.0_f64 * (-0.02_f64).exp();
         assert!(
             (p - expected).abs() < 1e-10_f64,
             "sigma=0 ITM put: got {p}, expected {expected}"
@@ -373,39 +398,25 @@ mod tests {
 
     #[test]
     fn test_validate_negative_spot() {
-        let params = call_params(
-            -1.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64,
-        );
+        let params = call_params(-1.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64);
         assert_eq!(validate(&params).unwrap_err(), PricingError::NegativeSpot);
     }
 
     #[test]
     fn test_validate_negative_strike() {
-        let params = call_params(
-            100.0_f64, -1.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64,
-        );
-        assert_eq!(
-            validate(&params).unwrap_err(),
-            PricingError::NegativeStrike
-        );
+        let params = call_params(100.0_f64, -1.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, 1.0_f64);
+        assert_eq!(validate(&params).unwrap_err(), PricingError::NegativeStrike);
     }
 
     #[test]
     fn test_validate_negative_time() {
-        let params = call_params(
-            100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, -1.0_f64,
-        );
-        assert_eq!(
-            validate(&params).unwrap_err(),
-            PricingError::NegativeTime
-        );
+        let params = call_params(100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, 0.20_f64, -1.0_f64);
+        assert_eq!(validate(&params).unwrap_err(), PricingError::NegativeTime);
     }
 
     #[test]
     fn test_validate_negative_vol() {
-        let params = call_params(
-            100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, -0.20_f64, 1.0_f64,
-        );
+        let params = call_params(100.0_f64, 100.0_f64, 0.05_f64, 0.02_f64, -0.20_f64, 1.0_f64);
         assert_eq!(
             validate(&params).unwrap_err(),
             PricingError::NegativeVolatility
